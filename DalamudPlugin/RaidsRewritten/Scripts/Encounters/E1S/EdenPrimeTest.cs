@@ -19,6 +19,7 @@ public class EdenPrimeTest(
     private string RngSeedKey => $"{Name}.RngSeed";
     private string RollingBallKey => $"{Name}.RollingBall";
     private string DreadknightKey => $"{Name}.Dreadknight";
+    private string AutoCleanseDebuff => $"{Name}.AutoCleanse";
 
     private readonly List<Mechanic> mechanics = [];
 
@@ -32,6 +33,8 @@ public class EdenPrimeTest(
         this.mechanics.Clear();
 
         this.mechanics.Add(mechanicFactory.Create<PermanentViceOfApathyTest>());
+
+        this.mechanics.Add(mechanicFactory.Create<AutoCleanseDebuff>());
 
         if (configuration.GetEncounterSetting(RollingBallKey, true))
         {

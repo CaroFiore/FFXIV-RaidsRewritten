@@ -83,8 +83,10 @@ public class TemperatureControl : Mechanic
 
     public override void OnFrameworkUpdate(IFramework framework)
     {
+        // This looks like a null check?
         if (!playerTemperatureQuery.HasValue)
-        {
+        { // Find all entities who have the player and temperature component
+            //
             playerTemperatureQuery = World.QueryBuilder<Player.Component, Temperature.Component>()
                 .TermAt(0).Up()
                 .With<Player.LocalPlayer>().Up()
@@ -115,22 +117,36 @@ public class TemperatureControl : Mechanic
     }
 
     public override void OnActionEffectEvent(ActionEffectSet set)
-    {
+    { // Fires whenever a game action is found.
         try
         {
+            // Filter out any actions that do are not.. an action with a source?
+            // Im guessing this is looking for actions from some source which could be a boss doing an attack.
             if (set.Action == null) { return; }
             if (set.Source == null) { return; }
+
+            // Check if the action is an action that applies heat, then save the value (amount) of heat to var Heat.
             if (!HeatDict.TryGetValue(set.Action.Value.RowId, out var Heat)) { return; }
             
+            // localPLayer from dalamud.
             var localPlayer = Dalamud.ObjectTable.LocalPlayer;
+            // Odd error catch which Im surprised if it ever runs but I guess it's not bad to have.
+            // Perhaps the localPlayer does not exist on every single frame?
             if (localPlayer == null) { return; }
 
+            // A delayed action, so heat will only apply Heat.DelaySeconds 
             var da = DelayedAction.Create(this.World, () =>     
-            {
+            {   // 
                 foreach (var targetEffects in set.TargetEffects)
-                {
+                {   // targetEffects is a list of targets of the action (set.TargetEffects).
+                    // If the localplayer is found in one of those targets, continue.
                     if (targetEffects.TargetID == localPlayer.GameObjectId)
-                    {
+                    {   
+// This seems to be where ECS logic starts.
+// Do a query (common query) over every single entity in the "World"
+// World here low-key sounds like the name you'd get from a ECS tutorial since it sounds like game dev logic (tell me if Im wrong :D)
+// Do a query selecting every single Entity that possesses the Player component (so entities that are players).
+// Then update the heat value of every entity found.
                         using var q = World.Query<Player.Component>();
                         q.Each((Entity e, ref Player.Component pc) =>
                         {
@@ -146,6 +162,8 @@ public class TemperatureControl : Mechanic
                     }
                 }
             }, Heat.DelaySeconds);
+// Lastly, attacks is basically the logic behind a specific mechanic.
+// This mechanic is called TemperatureControl, and one of the attacks is updating heat when entities get hit.
             this.attacks.Add(da);
         }
         catch (Exception e)
