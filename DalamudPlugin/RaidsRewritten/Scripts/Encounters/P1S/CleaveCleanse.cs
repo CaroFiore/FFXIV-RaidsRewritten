@@ -12,27 +12,30 @@ namespace RaidsRewritten.Scripts.Encounters.E1S;
 
 public class CleaveCleanse : Mechanic
 {
-    private const uint E1SAutoAttackId = 871;
+    private const float DebuffApplicationTime = 41.0f;
 
     private readonly List<uint> CleaveList = [
         28073, 28076, // Out / In dunno which is which
-        28070, 28075 // Left and Right
+        28071, 28074, // Left and Right
+        28070, 28075, // Also left and right, but maybe right>left?
+        28072, 28077 // In then Out I think
     ];
 
-    
+    private readonly List<Entity> attacks = [];
 
     public override void OnCombatStart()
     {
         Logger.Info("OnCombatStart()");
 
-        //This lambda is just a fancy way of saying for each entity found in the query.
-        // It's a bit of a hassle to learn but it's also unavoidable 
-        // Anyway, we apply a stun at tehs start of the fight to the localPlayer.
-        CommonQueries.LocalPlayerQuery.Each((Entity e, ref Player.Component _) =>
+        //Give the player a debuff 10 seconds in.
+        var da = DelayedAction.Create(this.World, delay : DebuffApplicationTime, action : () =>
         {
-            Conditions.Pacify.ApplyToTarget(e, 120.0f);
+            CommonQueries.LocalPlayerQuery.Each((Entity e, ref Player.Component _) =>
+            {
+                Conditions.Pacify.ApplyToTarget(e, float.PositiveInfinity);
+            });
         });
-        
+        this.attacks.Add(da);
     }
 
     public override void OnFrameworkUpdate(IFramework framework)
@@ -62,7 +65,7 @@ public class CleaveCleanse : Mechanic
 
     public override void OnActionEffectEvent(ActionEffectSet set)
     {
-        Logger.Info("OnActionEffectEvent");
+        //Logger.Info("OnActionEffectEvent");
         try
         {
             // Some null catching
@@ -71,6 +74,7 @@ public class CleaveCleanse : Mechanic
             if (set.Action == null){return ; }
 
             Logger.Info($"Action found: {set.Action.Value.Name} with ID {set.Action.Value.RowId}, is it any of {string.Join(", ", CleaveList)}");
+            Logger.Info($"Did this target have targets?: {set.TargetEffects.Any(player => player.TargetID == localPlayer.GameObjectId)}");
             if (!CleaveList.Contains(set.Action.Value.RowId)){return;}
 
             if (set.TargetEffects.Any(player => player.TargetID == localPlayer.GameObjectId))
@@ -106,5 +110,11 @@ public class CleaveCleanse : Mechanic
     public override void Reset()
     {
         Logger.Info("Reset()");
+
+        foreach (var attack in this.attacks)
+        {
+            attack.Destruct();
+        }
+        this.attacks.Clear();
     }
 }
