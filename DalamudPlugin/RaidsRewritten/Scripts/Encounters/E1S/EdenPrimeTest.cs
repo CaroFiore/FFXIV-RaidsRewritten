@@ -19,7 +19,7 @@ public class EdenPrimeTest(
     private string RngSeedKey => $"{Name}.RngSeed";
     private string RollingBallKey => $"{Name}.RollingBall";
     private string DreadknightKey => $"{Name}.Dreadknight";
-    private string AutoCleanseDebuff => $"{Name}.AutoCleanse";
+    private string AutoCleanseDebuffKey => $"{Name}.AutoCleanse";
 
     private readonly List<Mechanic> mechanics = [];
 

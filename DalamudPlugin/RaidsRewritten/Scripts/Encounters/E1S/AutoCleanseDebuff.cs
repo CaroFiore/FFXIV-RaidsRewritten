@@ -51,6 +51,7 @@ public class AutoCleanseDebuff : Mechanic
             // Now the query is built, so we can do calls on it.
         
             // Foreach conditionEntity that has the same ID as stun, destruct.
+            World.DeferBegin();
             query.Each((Entity conditionEntity, ref Condition.Component cc, ref Condition.Id id) =>
             {
                 if (id.Value == Stun.Id)
@@ -58,6 +59,7 @@ public class AutoCleanseDebuff : Mechanic
                     conditionEntity.Destruct();
                 }
             });
+            World.DeferEnd();
         });
     }
 
