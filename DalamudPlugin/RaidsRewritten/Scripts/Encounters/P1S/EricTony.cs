@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Dalamud.Bindings.ImGui;
 using RaidsRewritten.Network;
+using RaidsRewritten.Scripts.Encounters.E1S;
 using RaidsRewritten.Utility;
 
 
@@ -34,7 +35,8 @@ public class EricTony(
     public void RefreshMechanics()
     {
         this.mechanics.Clear();
-        //Todo, addm ehcanics here
+        
+        this.mechanics.Add(mechanicFactory.Create<CleaveCleanse>());
     }
 
     public void Unload()
